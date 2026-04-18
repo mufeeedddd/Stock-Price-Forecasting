@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Forecasting Terminal</title>
+    <style>
+        :root {
+            --bg: #07111f;
+            --bg-soft: #0b1628;
+            --card: rgba(17, 27, 43, 0.88);
+            --card-strong: #101b2d;
+            --accent: #63c5ff;
+            --accent-soft: rgba(99, 197, 255, 0.14);
+            --accent-green: #71e28f;
+            --accent-red: #ff7b8e;
+            --text: #eef4ff;
+            --muted: #93a4bf;
+            --border: rgba(99, 197, 255, 0.14);
+            --shadow: 0 10px 35px rgba(0, 0, 0, 0.22);
+            --radius: 18px;
+            --radius-sm: 12px;
+            --maxw: 1180px;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            min-height: 100vh;
+            background:
+                linear-gradient(rgba(99, 197, 255, 0.04) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(99, 197, 255, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at top, rgba(99, 197, 255, 0.06), transparent 30%),
+                var(--bg);
+            background-size: 48px 48px, 48px 48px, auto, auto;
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            padding-top: 76px;
+            overflow-x: hidden;
+        }
+
+        a { color: inherit; text-decoration: none; }
+
+        .mono {
+            font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+            letter-spacing: 0.06em;
+        }
+
+        nav {
+            position: fixed;
+            inset: 0 0 auto 0;
+            height: 76px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(7, 17, 31, 0.78);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            width: min(var(--maxw), calc(100% - 48px));
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .nav-logo {
+            font-size: 0.9rem;
+            color: var(--accent);
+            text-transform: uppercase;
+        }
+
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 34px;
+        }
+
+        .nav-links a {
+            font-size: 0.84rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: var(--muted);
+            font-weight: 600;
+            padding-bottom: 4px;
+            border-bottom: 1px solid transparent;
+            transition: color 0.2s ease, border-color 0.2s ease;
+        }
+
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .page {
+            position: relative;
+            z-index: 1;
+            width: min(var(--maxw), calc(100% - 48px));
+            margin: 0 auto;
+            padding: 38px 0 72px;
+        }
+
+        .header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 18px;
+            flex-wrap: wrap;
+            padding-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 28px;
+        }
+
+        .engine-title {
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: clamp(2rem, 4vw, 2.7rem);
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .header p {
+            color: var(--muted);
+            font-size: 0.86rem;
+        }
+
+        .live-badge {
+            align-self: center;
+            height: 38px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid rgba(99, 197, 255, 0.42);
+            color: var(--accent);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            background: rgba(99, 197, 255, 0.04);
+        }
+
+        .live-badge::before {
+            content: "";
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 10px rgba(113, 226, 143, 0.5);
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 24px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .side-stack {
+            display: grid;
+            gap: 18px;
+        }
+
+        .side-card {
+            padding: 22px;
+        }
+
+        .card-tag {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .metric-box {
+            background: rgba(7, 17, 31, 0.72);
+            border: 1px solid rgba(99, 197, 255, 0.09);
+            border-left: 3px solid var(--accent);
+            border-radius: 12px;
+            padding: 14px 15px;
+            margin-bottom: 12px;
+        }
+
+        .metric-box:last-child { margin-bottom: 0; }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 0.68rem;
+            text-transform: uppercase;
+            margin-bottom: 6px;
+        }
+
+        .metric-value {
+            color: var(--text);
+            font-size: 1.1rem;
+            font-weight: 800;
+        }
+
+        .metric-value.small {
+            font-size: 0.82rem;
+            line-height: 1.6;
+            font-weight: 700;
+        }
+
+        .about-copy {
+            color: var(--muted);
+            font-size: 0.92rem;
+            line-height: 1.8;
+        }
+
+        .main-card {
+            padding: 34px;
+        }
+
+        .main-card h2 {
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -0.04em;
+            color: var(--text);
+            margin-bottom: 10px;
+        }
+
+        .main-subtitle {
+            color: var(--muted);
+            font-size: 0.98rem;
+            line-height: 1.8;
+            margin-bottom: 28px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        input[type="number"] {
+            flex: 1;
+            min-width: 250px;
+            height: 58px;
+            padding: 0 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(99, 197, 255, 0.14);
+            background: rgba(7, 17, 31, 0.82);
+            color: var(--text);
+            font-size: 1rem;
+            font-family: Inter, "Segoe UI", Roboto, Arial, sans-serif;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        input[type="number"]::placeholder {
+            color: var(--muted);
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: rgba(99, 197, 255, 0.48);
+            box-shadow: 0 0 0 3px rgba(99, 197, 255, 0.09);
+        }
+
+        button {
+            height: 58px;
+            padding: 0 26px;
+            border: none;
+            border-radius: 14px;
+            background: var(--accent);
+            color: #07111f;
+            font-size: 0.86rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        button:hover { transform: translateY(-2px); opacity: 0.94; }
+
+        .result {
+            margin-top: 28px;
+            padding: 24px;
+            border-radius: 16px;
+            border: 1px dashed rgba(99, 197, 255, 0.32);
+            background: rgba(99, 197, 255, 0.03);
+        }
+
+        .result-label {
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 16px;
+        }
+
+        .result-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .result-item {
+            background: rgba(7, 17, 31, 0.72);
+            border: 1px solid rgba(99, 197, 255, 0.08);
+            border-radius: 14px;
+            padding: 16px 18px;
+        }
+
+        .rlabel {
+            color: var(--muted);
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .rvalue {
+            font-family: "JetBrains Mono", "Cascadia Code", Consolas, monospace;
+            font-size: 1.9rem;
+            font-weight: 800;
+        }
+
+        .rvalue.input { color: var(--accent); }
+        .rvalue.output { color: var(--accent-green); }
+
+        .result-note {
+            margin-top: 14px;
+            color: var(--muted);
+            font-size: 0.84rem;
+            line-height: 1.7;
+        }
+
+        .error-box {
+            margin-top: 22px;
+            padding: 16px 18px;
+            border-radius: 14px;
+            border: 1px solid rgba(255, 123, 142, 0.35);
+            background: rgba(255, 123, 142, 0.06);
+            color: var(--accent-red);
+            line-height: 1.7;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            border-top: 1px solid var(--border);
+            padding: 24px 0 34px;
+            margin-top: 62px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            color: var(--muted);
+            font-size: 0.78rem;
+        }
+
+        @media (max-width: 980px) {
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 640px) {
+            nav { height: 70px; }
+            .page { width: min(var(--maxw), calc(100% - 28px)); }
+            .nav-inner { width: 100%; }
+            .nav-links { gap: 18px; }
+            .nav-links a { font-size: 0.74rem; }
+            .result-grid { grid-template-columns: 1fr; }
+            footer {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-inner">
+        <div class="nav-logo mono">SPFS // ML Model</div>
+        <div class="nav-links">
+            <a href="/">Home</a>
+            <a href="/predict" class="active">Terminal</a>
+            <a href="/contact">Contact</a>
+        </div>
+    </div>
+</nav>
+
+<div class="page">
+    <div class="header">
+        <div>
+            <h1 class="engine-title">Stock Price Forecasting Terminal</h1>
+            <p class="mono">MSc Statistics with Data Science — Final Year Project</p>
+        </div>
+        <div class="live-badge mono">Live Inference</div>
+    </div>
+
+    <div class="layout">
+        <div class="side-stack">
+            <div class="card side-card">
+                <div class="card-tag mono">Model Metrics</div>
+
+                <div class="metric-box">
+                    <div class="metric-label mono">Reliability (R²)</div>
+                    <div class="metric-value">~0.98</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label mono">Average Error (MAE)</div>
+                    <div class="metric-value">${{ metrics.mae }}</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label mono">Algorithm</div>
+                    <div class="metric-value small">{{ metrics.method }}</div>
+                </div>
+
+                <div class="metric-box">
+                    <div class="metric-label mono">Evaluation</div>
+                    <div class="metric-value small">{{ metrics.note }}</div>
+                </div>
+            </div>
+
+            <div class="card side-card">
+                <div class="card-tag mono">About</div>
+                <p class="about-copy">
+                    This terminal uses an Ordinary Least Squares regression model trained on historical closing prices
+                    to estimate the next trading session’s target value. It is positioned as an interpretable baseline
+                    forecasting system with a usable interface rather than a purely technical demo.
+                </p>
+            </div>
+        </div>
+
+        <div class="card main-card">
+            <h2>Univariate Forecasting Engine</h2>
+            <p class="main-subtitle">
+                Enter the latest closing price to estimate the next trading session (T+1).
+            </p>
+
+            <form action="/predict" method="post">
+                <div class="form-row">
+                    <input
+                        type="number"
+                        step="0.01"
+                        name="price"
+                        placeholder="Enter current close price (e.g. 5400.25)"
+                        required
+                    >
+                    <button type="submit">Execute Forecast</button>
+                </div>
+            </form>
+
+            {% if prediction %}
+            <div class="result">
+                <div class="result-label mono">Forecast Output</div>
+
+                <div class="result-grid">
+                    <div class="result-item">
+                        <div class="rlabel mono">Input Basis</div>
+                        <div class="rvalue input">${{ "%.2f"|format(original|float) }}</div>
+                    </div>
+
+                    <div class="result-item">
+                        <div class="rlabel mono">Predicted Target (T+1)</div>
+                        <div class="rvalue output">${{ "%.2f"|format(prediction|float) }}</div>
+                    </div>
+                </div>
+
+                <p class="result-note">
+                    Prediction generated using an OLS regression model trained on historical closing prices.
+                    The model was evaluated using a time-based split to support realistic out-of-sample performance.
+                    Accuracy may vary during periods of high market volatility.
+                </p>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="error-box">
+                Inference Error: {{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <footer class="mono">
+        <span>© 2026 Mufeed T H — Sree Sankara College, Kalady</span>
+        <span>MSc Statistics with Data Science</span>
+    </footer>
+</div>
+
+</body>
+</html>
