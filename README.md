@@ -25,8 +25,9 @@ stock-price-forecasting/
 └── README.md
 ```
 
-> **Note:** The dataset (`all_stocks_5yr.xlsx`, ~29MB) and Power BI dashboard (`Project Draft.pbix`, ~31MB) exceed GitHub's file size limit and are not included in this repository.  
-> Dataset source: [S&P 500 Stock Data — Kaggle](https://www.kaggle.com/datasets/camnugent/sandp500)
+> **Note:** The dataset (`all_stocks_5yr.xlsx`, ~29MB) exceeds GitHub's file size limit and is not included in this repository.  
+> Dataset source: [S&P 500 Stock Data — Kaggle](https://www.kaggle.com/datasets/camnugent/sandp500)  
+> 📊 Power BI Dashboard (.pbix): [Download from Google Drive](https://drive.google.com/file/d/1r6THn-0jC9PRR2GRQHNczZfdF8xOBf-T/view?usp=sharing)
 
 ---
 
